@@ -4,11 +4,11 @@
 ######
 ## Change the following variables to select your call, password, locaton etc.
 
-callsign="xxxxxx-xx" # Change this to your callsign-ssid
-password="12345" # See http://apps.magicbug.co.uk/passcode/
-position="!4151.29N/07100.40WI" # See position report below
+. .env
+
 serverHost="rotate.aprs2.net" # See http://www.aprs2.net/APRServe2.txt
-comment="shellbeacon 1.0 by WA1GOV"
+comment="test beacon"
+#comment=""
 
 serverPort=14580 # Definable Filter Port
 delay=1800 # default 30 minutes
@@ -26,20 +26,28 @@ address="${callsign}>APRS,TCPIP:"
 # Enter your callsign-ssid on https://aprs.fi/ to check your location
 
 login="user $callsign pass $password vers ShellBeacon 1.0"
-packet="${address}${position}${comment}"
+packet="${address}${position} ${comment}"
 echo "$packet" # prints the packet being sent
 echo "${#comment}" # prints the length of the comment part of the packet
 
 while true
 do
 #### use here-document to feed packets into netcat
-	nc -C $serverHost $serverPort -q 10 <<-END
-	$login
-	$packet
-	END
+	#nc -C $serverHost $serverPort -q 10 <<-END
+	#$login
+	#$packet
+	#END
+	echo "sending.."
+	{
+	  printf "%s\r\n" "$login"
+	  printf "%s\r\n" "$packet"
+	  sleep 5
+	} | netcat-openbsd $serverHost $serverPort
 	if [ "$1" = "1" ]
-	then 
+	then
+	    echo "success"
 	    exit
 	fi
+	echo "fail, trying again in ${delay}"
 	sleep $delay
 done

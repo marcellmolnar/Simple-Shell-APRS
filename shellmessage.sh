@@ -10,8 +10,8 @@ fi
 
 ## Change the following variables to select your call, password etc.
 
-callsign="xxxxxx-xx" # Change this to your callsign-ssid
-password="12345" # See http://apps.magicbug.co.uk/passcode/
+. .env
+
 serverHost="rotate.aprs2.net" # See http://www.aprs2.net/APRServe2.txt
 serverPort=14580 # Definable Filter Port
 address="${callsign}>APRS,TCPIP::"
@@ -21,7 +21,14 @@ comment="$2"
 
 TOCALL=`printf "%-9s" $TOCALL`
 packet="${address}${TOCALL}:${comment}"
-nc -C $serverHost $serverPort -q 5 <<END
-$login
-$packet
-END
+#netcat-openbsd -C $serverHost $serverPort -q 5 <<END
+#$login
+#$packet
+#END
+
+{
+  printf "%s\r\n" "$login"
+  printf "%s\r\n" "$packet"
+  sleep 5
+} | nc $serverHost $serverPort
+
